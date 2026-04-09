@@ -1,13 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { storage } from './src/utils/storage';
-import SplashScreen from './src/components/common/SplashScreen';
-import { colors } from './src/constants/colors';
-import { AuthProvider } from './src/contexts/AuthContext';
-import RootNavigator from './src/components/navigation/AppNavigator';
+// App.tsx
+import React, { useState, useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { storage } from "./src/utils/storage";
+import SplashScreen from "./src/components/common/SplashScreen";
+import { AuthProvider } from "./src/contexts/AuthContext";
+import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
+import RootNavigator from "./src/components/navigation/AppNavigator";
 
+// Inner component to use theme
+function AppContent() {
+  const { headerColor, statusBarStyle } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={statusBarStyle} backgroundColor={headerColor} />
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </>
+  );
+}
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -16,29 +30,30 @@ export default function App() {
   useEffect(() => {
     const prepareApp = async () => {
       try {
-        // Clear any corrupted navigation state
-        await storage.removeItem('NAVIGATION_STATE');
-        await storage.removeItem('NAVIGATION_STATE_KEY');
+        await storage.removeItem("NAVIGATION_STATE");
+        await storage.removeItem("NAVIGATION_STATE_KEY");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
-        console.error('Error clearing navigation state:', error);
+        console.error("Error preparing app:", error);
+      } finally {
+        setIsReady(true);
+        setIsLoading(false);
       }
-      setIsReady(true);
     };
-    
+
     prepareApp();
   }, []);
 
   if (!isReady || isLoading) {
-    return <SplashScreen onFinish={() => setIsLoading(false)} />;
+    return <SplashScreen onFinish={() => {}} />;
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar style="dark" backgroundColor={colors.background} />
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

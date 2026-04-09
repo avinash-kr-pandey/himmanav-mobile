@@ -1,9 +1,9 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import DynamicTabBar, { TabItem } from '../../components/common/DynamicTabBar';
 import HomeScreen from './home';
 import ExploreScreen from './explore';
 import ProfileScreen from './profile';
+import DynamicTabBar, { TabItem } from '../../components/navigation/DynamicTabBar';
 
 const Tab = createBottomTabNavigator();
 

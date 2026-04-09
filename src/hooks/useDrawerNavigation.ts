@@ -1,5 +1,6 @@
-import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+
 
 type RootDrawerParamList = {
   MainTabs: undefined;

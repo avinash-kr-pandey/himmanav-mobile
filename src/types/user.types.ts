@@ -1,17 +1,13 @@
+// types/user.types.ts
 export interface User {
   id: string;
-  email: string;
   name: string;
-  avatar?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
+  email: string;
+  mobile_number?: string;
+  user_type: "admin" | "employee" | "super-admin";
+  companies?: Array<{ company_slug: string }>;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface LoginCredentials {
@@ -19,7 +15,28 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface RegisterCredentials extends LoginCredentials {
+export interface RegisterCredentials {
   name: string;
-  confirmPassword: string;
+  mobile_number: string;
+  email?: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface ForgotPasswordCredentials {
+  email: string;
+}
+
+export interface ResetPasswordCredentials {
+  email: string;
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  user?: User;
 }

@@ -1,26 +1,38 @@
-import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../constants/colors';
+import React from "react";
+import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+
+type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
 export interface TabItem {
   name: string;
   label: string;
-  icon: string;
-  activeIcon: string;
+  icon: IconName;
+  activeIcon: IconName;
 }
 
-export default function DynamicTabBar({
+interface DynamicTabBarProps extends BottomTabBarProps {
+  tabConfig: TabItem[];
+}
+
+const colors = {
+  primary: "#6366f1",
+  textLighter: "#9ca3af",
+  surface: "#ffffff",
+  border: "#e5e7eb",
+};
+
+const DynamicTabBar: React.FC<DynamicTabBarProps> = ({
   state,
   descriptors,
   navigation,
   tabConfig,
-}: BottomTabBarProps & { tabConfig: TabItem[] }) {
+}) => {
   return (
     <View style={styles.container}>
       {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key]; // ✅ Fix: Get options from descriptors
+        const { options } = descriptors[route.key];
         const isFocused = state.index === index;
         const tabItem = tabConfig.find((tab) => tab.name === route.name);
 
@@ -28,19 +40,19 @@ export default function DynamicTabBar({
 
         const onPress = () => {
           const event = navigation.emit({
-            type: 'tabPress',
+            type: "tabPress",
             target: route.key,
             canPreventDefault: true,
           });
 
           if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
+            navigation.navigate(route.name as never);
           }
         };
 
         const onLongPress = () => {
           navigation.emit({
-            type: 'tabLongPress',
+            type: "tabLongPress",
             target: route.key,
           });
         };
@@ -49,14 +61,14 @@ export default function DynamicTabBar({
           <TouchableOpacity
             key={route.name}
             accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
+            // ✅ CRITICAL FIX: accessibilityState removed completely
             accessibilityLabel={options.tabBarAccessibilityLabel}
             onPress={onPress}
             onLongPress={onLongPress}
             style={styles.tabItem}
           >
             <Ionicons
-              name={isFocused ? (tabItem.activeIcon as any) : (tabItem.icon as any)}
+              name={isFocused ? tabItem.activeIcon : tabItem.icon}
               size={24}
               color={isFocused ? colors.primary : colors.textLighter}
             />
@@ -73,16 +85,16 @@ export default function DynamicTabBar({
       })}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 60,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -90,12 +102,13 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
+    alignItems: "center",
+    justifyContent: "center",
   },
   label: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
+
+export default DynamicTabBar;
