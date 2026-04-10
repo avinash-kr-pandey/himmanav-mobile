@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Dimensions,
+  Animated,
+  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import {
@@ -15,55 +18,61 @@ import {
   featurecardimg2,
 } from "../../../assets/useImage";
 
+const { width } = Dimensions.get("window");
+
 export const AuthSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const slides = [
     {
       id: 1,
       title: "Run Your Business in One Simple Dashboard",
       description:
-        "From customers to expenses and HR, manage your daily business tasks with ease. Our simple dashboard saves you time, reduces errors, and keeps everything running smoothly. Organize all your operations in one place and get real-time updates for faster decisions.",
-      icon: <Icon name="shield-alt" size={24} color="#4361ee" />,
+        "From customers to expenses and HR, manage your daily business tasks with ease. Our simple dashboard saves you time, reduces errors, and keeps everything running smoothly.",
+      icon: "shield-alt",
       showcase: homeimg1,
       features: [
         {
-          icon: <Icon name="shield-alt" size={16} color="#22C55E" />,
+          icon: "bolt",
           text: "Save Time with Smart Automation",
+          color: "#22C55E",
         },
         {
-          icon: <Icon name="chart-line" size={16} color="#22C55E" />,
+          icon: "chart-line",
           text: "Track KPIs in Real-Time",
+          color: "#3B82F6",
         },
         {
-          icon: <Icon name="users" size={16} color="#22C55E" />,
+          icon: "users",
           text: "CRM Automation & Follow-ups",
+          color: "#F59E0B",
         },
-        {
-          icon: <Icon name="clock" size={16} color="#22C55E" />,
-          text: "Schedule Tasks Efficiently",
-        },
+        { icon: "clock", text: "Schedule Tasks Efficiently", color: "#8B5CF6" },
       ],
     },
     {
       id: 2,
       title: "Real-time KPIs and Analytics",
       description:
-        "Get actionable insights with our powerful analytics tools to track performance and customer behavior. Make data-driven decisions and optimize your workflow for maximum efficiency and growth.",
-      icon: <Icon name="chart-line" size={24} color="#4361ee" />,
+        "Get actionable insights with our powerful analytics tools to track performance and customer behavior. Make data-driven decisions and optimize your workflow for maximum efficiency.",
+      icon: "chart-line",
       showcase: homeimg2,
       features: [
         {
-          icon: <Icon name="chart-line" size={16} color="#22C55E" />,
+          icon: "chart-line",
           text: "Monitor KPIs Instantly",
+          color: "#22C55E",
         },
         {
-          icon: <Icon name="shield-alt" size={16} color="#22C55E" />,
+          icon: "shield-alt",
           text: "Prevent Errors with Alerts",
+          color: "#3B82F6",
         },
         {
-          icon: <Icon name="clock" size={16} color="#22C55E" />,
+          icon: "clock",
           text: "Time-based Performance Reports",
+          color: "#F59E0B",
         },
       ],
     },
@@ -71,21 +80,24 @@ export const AuthSlider = () => {
       id: 3,
       title: "Customer Relationship Management",
       description:
-        "Build stronger relationships with automated follow-ups, personalized communication, and 360° customer views. Never miss a touchpoint with your clients and enhance satisfaction with every interaction.",
-      icon: <Icon name="users" size={24} color="#4361ee" />,
+        "Build stronger relationships with automated follow-ups, personalized communication, and 360° customer views. Never miss a touchpoint with your clients.",
+      icon: "users",
       showcase: featurecardimg1,
       features: [
         {
-          icon: <Icon name="users" size={16} color="#22C55E" />,
+          icon: "users",
           text: "Automated Customer Follow-ups",
+          color: "#22C55E",
         },
         {
-          icon: <Icon name="chart-line" size={16} color="#22C55E" />,
+          icon: "chart-line",
           text: "Insightful Customer Analytics",
+          color: "#3B82F6",
         },
         {
-          icon: <Icon name="shield-alt" size={16} color="#22C55E" />,
+          icon: "shield-alt",
           text: "Secure Data Management",
+          color: "#F59E0B",
         },
       ],
     },
@@ -93,170 +105,320 @@ export const AuthSlider = () => {
       id: 4,
       title: "Automated Workflows",
       description:
-        "Save time with intelligent automation that handles repetitive tasks and ensures timely customer responses. Streamline your daily operations and focus on high-impact activities that grow your business.",
-      icon: <Icon name="clock" size={24} color="#4361ee" />,
+        "Save time with intelligent automation that handles repetitive tasks and ensures timely customer responses. Streamline your daily operations and focus on high-impact activities.",
+      icon: "clock",
       showcase: featurecardimg2,
       features: [
-        {
-          icon: <Icon name="clock" size={16} color="#22C55E" />,
-          text: "Smart Task Automation",
-        },
-        {
-          icon: <Icon name="chart-line" size={16} color="#22C55E" />,
-          text: "Performance Tracking",
-        },
-        {
-          icon: <Icon name="shield-alt" size={16} color="#22C55E" />,
-          text: "Error Reduction Tools",
-        },
+        { icon: "clock", text: "Smart Task Automation", color: "#22C55E" },
+        { icon: "chart-line", text: "Performance Tracking", color: "#3B82F6" },
+        { icon: "shield-alt", text: "Error Reduction Tools", color: "#F59E0B" },
       ],
     },
   ];
 
+  const handleSlideChange = (index: number) => {
+    Animated.sequence([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    setCurrentSlide(index);
+  };
+
+  const renderFeatureIcon = (iconName: string, color: string) => {
+    return <Icon name={iconName} size={14} color={color} solid />;
+  };
+
   return (
-    <View style={styles.sliderSection}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>
-          <Icon name="th" size={20} color="#4361ee" /> Smart Tools to Help Small
-          Businesses Grow
+    <View style={styles.container}>
+      {/* Header Section */}
+      <View style={styles.headerSection}>
+        <View style={styles.headerBadge}>
+          <Icon name="th" size={14} color="#4361ee" solid />
+          <Text style={styles.headerBadgeText}>Smart Solutions</Text>
+        </View>
+        <Text style={styles.headerTitle}>
+          Everything You Need to{"\n"}
+          <Text style={styles.headerHighlight}>Grow Your Business</Text>
         </Text>
-        <Text style={styles.sectionSubtitle}>
-          Everything you need to manage customer relationships in one powerful
-          system
+        <Text style={styles.headerSubtitle}>
+          Powerful tools to manage customer relationships and streamline
+          operations
         </Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.iconLine}
-      >
+      {/* Icon Navigation - No horizontal scroll needed now */}
+      <View style={styles.navigationContainer}>
         {slides.map((slide, index) => (
           <TouchableOpacity
             key={slide.id}
-            style={[
-              styles.iconItem,
-              currentSlide === index && styles.activeIconItem,
-            ]}
-            onPress={() => setCurrentSlide(index)}
+            style={styles.navItem}
+            onPress={() => handleSlideChange(index)}
+            activeOpacity={0.7}
           >
             <View
               style={[
-                styles.iconCircle,
-                currentSlide === index && styles.activeIconCircle,
+                styles.navIconWrapper,
+                currentSlide === index && styles.navIconWrapperActive,
               ]}
             >
-              {slide.icon}
+              <Icon
+                name={slide.icon}
+                size={18}
+                color={currentSlide === index ? "#4361ee" : "#9CA3AF"}
+                solid
+              />
             </View>
+            <Text
+              style={[
+                styles.navLabel,
+                currentSlide === index && styles.navLabelActive,
+              ]}
+            >
+              {index === 0 && "Dashboard"}
+              {index === 1 && "Analytics"}
+              {index === 2 && "CRM"}
+              {index === 3 && "Automation"}
+            </Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
 
-      <View style={styles.sliderContentSection}>
-        <View style={styles.sliderImageContent}>
-          <Image
-            source={slides[currentSlide].showcase}
-            style={styles.showcaseImage}
-          />
+      {/* Main Content */}
+      <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
+        {/* Image Section */}
+        <View style={styles.imageSection}>
+          <View style={styles.imageWrapper}>
+            <Image
+              source={slides[currentSlide].showcase}
+              style={styles.showcaseImage}
+              resizeMode="contain"
+            />
+          </View>
         </View>
-        <View style={styles.sliderTextContent}>
-          <Text style={styles.sliderTitle}>{slides[currentSlide].title}</Text>
-          <Text style={styles.sliderDescription}>
+
+        {/* Text Content Section */}
+        <View style={styles.textSection}>
+          <Text style={styles.slideTitle}>{slides[currentSlide].title}</Text>
+          <Text style={styles.slideDescription}>
             {slides[currentSlide].description}
           </Text>
-          {slides[currentSlide].features.map((feature, i) => (
-            <View key={i} style={styles.featureItem}>
-              {feature.icon}
-              <Text style={styles.featureText}>{feature.text}</Text>
-            </View>
-          ))}
+
+          {/* Features Grid */}
+          <View style={styles.featuresGrid}>
+            {slides[currentSlide].features.map((feature, idx) => (
+              <View key={idx} style={styles.featureCard}>
+                <View
+                  style={[
+                    styles.featureIconWrapper,
+                    { backgroundColor: `${feature.color}10` },
+                  ]}
+                >
+                  {renderFeatureIcon(feature.icon, feature.color)}
+                </View>
+                <Text style={styles.featureCardText}>{feature.text}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Slide Indicators */}
+          <View style={styles.indicators}>
+            {slides.map((_, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.indicator,
+                  currentSlide === index && styles.indicatorActive,
+                ]}
+                onPress={() => handleSlideChange(index)}
+              />
+            ))}
+          </View>
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  sliderSection: {
-    padding: 20,
-    backgroundColor: "#fff",
+  container: {
+    backgroundColor: "#FFFFFF",
+    paddingVertical: Platform.OS === "ios" ? 20 : 24,
   },
-  sectionHeader: {
+  headerSection: {
+    paddingHorizontal: 20,
+    marginBottom: 28,
+  },
+  headerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0F4FF",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: "center",
+    marginBottom: 16,
+    gap: 8,
+  },
+  headerBadgeText: {
+    fontSize: 12,
+    color: "#4361ee",
+    fontWeight: "600",
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#1F2937",
+    textAlign: "center",
+    lineHeight: 36,
+    marginBottom: 12,
+    letterSpacing: -0.5,
+  },
+  headerHighlight: {
+    color: "#4361ee",
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 20,
+  },
+  navigationContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingHorizontal: 16,
+    marginBottom: 24,
+    flexWrap: "wrap",
+  },
+  navItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  navIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#F9FAFB",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  navIconWrapperActive: {
+    backgroundColor: "#F0F4FF",
+    borderColor: "#4361ee",
+    borderWidth: 2,
+  },
+  navLabel: {
+    fontSize: 10,
+    color: "#6B7280",
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  navLabelActive: {
+    color: "#4361ee",
+    fontWeight: "600",
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+  },
+  imageSection: {
     alignItems: "center",
     marginBottom: 24,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1a1a2e",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-  iconLine: {
-    flexDirection: "row",
-    marginBottom: 30,
-  },
-  iconItem: {
-    marginRight: 16,
-    padding: 8,
-  },
-  activeIconItem: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#4361ee",
-  },
-  iconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  activeIconCircle: {
-    backgroundColor: "#e8f0fe",
-  },
-  sliderContentSection: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  sliderImageContent: {
-    flex: 1,
-    alignItems: "center",
-    marginBottom: 20,
+  imageWrapper: {
+    borderRadius: 24,
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
   showcaseImage: {
-    width: 200,
+    width: width - 80,
     height: 200,
-    resizeMode: "contain",
+    backgroundColor: "#F9FAFB",
   },
-  sliderTextContent: {
+  textSection: {
     flex: 1,
   },
-  sliderTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1a1a2e",
+  slideTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1F2937",
     marginBottom: 12,
+    lineHeight: 30,
+    letterSpacing: -0.3,
   },
-  sliderDescription: {
+  slideDescription: {
     fontSize: 14,
-    color: "#666",
+    color: "#6B7280",
     lineHeight: 22,
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  featureItem: {
+  featuresGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 28,
+  },
+  featureCard: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
     gap: 8,
+    width: "48%",
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
   },
-  featureText: {
-    fontSize: 14,
-    color: "#333",
+  featureIconWrapper: {
+    width: 26,
+    height: 26,
+    borderRadius: 7,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  featureCardText: {
+    fontSize: 12,
+    color: "#4B5563",
+    fontWeight: "500",
+    flex: 1,
+    lineHeight: 16,
+  },
+  indicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    paddingBottom: Platform.OS === "ios" ? 20 : 16,
+  },
+  indicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#D1D5DB",
+  },
+  indicatorActive: {
+    width: 24,
+    backgroundColor: "#4361ee",
   },
 });

@@ -6,22 +6,28 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  Dimensions,
+  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import { MaterialIcons } from "@expo/vector-icons";
+
+const { width } = Dimensions.get("window");
 
 interface Plan {
   id: string;
   name: string;
   price: number;
   features: string[];
+  popular?: boolean;
 }
 
 // Mock data - replace with your actual API call
 const mockPlans: Plan[] = [
   {
     id: "1",
-    name: "Starter Plan",
-    price: 1000,
+    name: "Starter",
+    price: 999,
     features: [
       "Admin Access",
       "Basic CRM Features",
@@ -31,14 +37,29 @@ const mockPlans: Plan[] = [
   },
   {
     id: "2",
-    name: "Premium Plan",
-    price: 500,
+    name: "Premium",
+    price: 1999,
     features: [
       "All Starter Features",
       "Advanced Analytics",
       "Priority Support",
       "Unlimited Users",
       "AI Features",
+      "Custom Reports",
+    ],
+    popular: true,
+  },
+  {
+    id: "3",
+    name: "Enterprise",
+    price: 4999,
+    features: [
+      "All Premium Features",
+      "Dedicated Support",
+      "Custom Integration",
+      "SLA Guarantee",
+      "Training Included",
+      "API Access",
     ],
   },
 ];
@@ -50,7 +71,7 @@ const useFetchPackagesQuery = () => {
 
 export const AuthPackages = () => {
   const { data, isLoading } = useFetchPackagesQuery();
-  const plans = data?.data?.slice(0, 2) || [];
+  const plans = data?.data || [];
 
   if (isLoading) {
     return (
@@ -61,135 +82,323 @@ export const AuthPackages = () => {
   }
 
   return (
-    <View style={styles.packagesSection}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>
-          <Icon name="tags" size={20} color="#4361ee" /> Our Pricing Plans
+    <View style={styles.container}>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <View style={styles.headerBadge}>
+          <MaterialIcons name="sell" size={18} color="#4361ee" />
+          <Text style={styles.headerBadgeText}>Pricing Plans</Text>
+        </View>
+        <Text style={styles.headerTitle}>
+          Choose Your <Text style={styles.headerHighlight}>Perfect Plan</Text>
         </Text>
-        <Text style={styles.sectionSubtitle}>
-          Choose the perfect plan for your business needs
+        <Text style={styles.headerSubtitle}>
+          Flexible pricing options for businesses of all sizes
         </Text>
       </View>
 
+      {/* Plans Scroll */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={styles.packagesContainer}
+        style={styles.plansContainer}
+        contentContainerStyle={styles.plansContent}
+        decelerationRate="fast"
+        snapToInterval={width - 80}
+        snapToAlignment="center"
       >
         {plans.map((plan) => (
-          <View key={plan.id} style={styles.packageCard}>
-            <Text style={styles.packageName}>{plan.name}</Text>
-            <View style={styles.packagePrice}>
-              <Text style={styles.currency}>₹</Text>
-              <Text style={styles.price}>{plan.price}</Text>
-              <Text style={styles.duration}>/year</Text>
-            </View>
-            <View style={styles.featuresList}>
-              {plan.features.map((feature, idx) => (
-                <View key={idx} style={styles.featureItem}>
-                  <Icon name="check-circle" size={16} color="#22C55E" />
-                  <Text style={styles.featureText}>{feature}</Text>
+          <View
+            key={plan.id}
+            style={[styles.planCard, plan.popular && styles.planCardPopular]}
+          >
+            {/* Popular Badge - Now properly positioned */}
+            {plan.popular && (
+              <View style={styles.popularBadge}>
+                <Icon name="star" size={12} color="#fff" solid />
+                <Text style={styles.popularText}>Most Popular</Text>
+              </View>
+            )}
+
+            {/* Plan Content */}
+            <View style={styles.planContent}>
+              {/* Plan Name */}
+              <Text style={styles.planName}>{plan.name}</Text>
+
+              {/* Price */}
+              <View style={styles.priceContainer}>
+                <Text style={styles.currency}>₹</Text>
+                <Text style={styles.price}>{plan.price.toLocaleString()}</Text>
+                <Text style={styles.duration}>/year</Text>
+              </View>
+
+              {/* Features List */}
+              <View style={styles.featuresWrapper}>
+                <View style={styles.featuresContainer}>
+                  {plan.features.map((feature, idx) => (
+                    <View key={idx} style={styles.featureItem}>
+                      <Icon
+                        name="check-circle"
+                        size={14}
+                        color="#22C55E"
+                        solid
+                      />
+                      <Text style={styles.featureText}>{feature}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
+              </View>
             </View>
-            <TouchableOpacity style={styles.selectButton}>
-              <Text style={styles.selectButtonText}>Select Plan</Text>
+
+            {/* Select Button */}
+            <TouchableOpacity
+              style={[
+                styles.selectButton,
+                plan.popular && styles.selectButtonPopular,
+              ]}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.selectButtonText,
+                  plan.popular && styles.selectButtonTextPopular,
+                ]}
+              >
+                Get Started
+              </Text>
+              <Icon
+                name="arrow-right"
+                size={14}
+                color={plan.popular ? "#fff" : "#4361ee"}
+                solid
+              />
             </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
+
+      {/* Footer Note */}
+      <View style={styles.footer}>
+        <Icon name="shield-alt" size={12} color="#9CA3AF" solid />
+        <Text style={styles.footerText}>
+          All plans include 14-day free trial. No credit card required.
+        </Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  packagesSection: {
-    padding: 20,
-    backgroundColor: "#f8f9fa",
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  header: {
+    width: width,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "ios" ? 20 : 24,
+    paddingBottom: 24,
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  headerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0F4FF",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 16,
+    gap: 8,
+  },
+  headerBadgeText: {
+    fontSize: 12,
+    color: "#4361ee",
+    fontWeight: "600",
+  },
+  headerTitle: {
+    fontSize: Platform.OS === "ios" ? 32 : 28,
+    fontWeight: "700",
+    color: "#1F2937",
+    textAlign: "center",
+    marginBottom: 12,
+    lineHeight: Platform.OS === "ios" ? 40 : 36,
+  },
+  headerHighlight: {
+    color: "#4361ee",
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 20,
   },
   loadingContainer: {
     padding: 40,
     alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
-  sectionHeader: {
-    alignItems: "center",
-    marginBottom: 32,
+  plansContainer: {
+    marginTop: 8,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1a1a2e",
-    marginBottom: 8,
+  plansContent: {
+    paddingHorizontal: 20,
+    gap: 16,
+    alignItems: "stretch",
+    paddingTop: 16,
+    paddingBottom: 8,
   },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
+  planCard: {
+    width: width - 80,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    position: "relative",
+    justifyContent: "space-between",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-  packagesContainer: {
+  planCardPopular: {
+    borderColor: "#4361ee",
+    borderWidth: 2,
+    backgroundColor: "#FFFFFF",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#4361ee",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  popularBadge: {
+    position: "absolute",
+    top: -12,
+    right: 20,
     flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4361ee",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+    zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
-  packageCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
-    marginRight: 16,
-    width: 280,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  popularText: {
+    fontSize: 11,
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
-  packageName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1a1a2e",
+  planContent: {
+    flex: 1,
+  },
+  planName: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1F2937",
     marginBottom: 16,
+    marginTop: 8,
   },
-  packagePrice: {
+  priceContainer: {
     flexDirection: "row",
     alignItems: "baseline",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   currency: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
     color: "#4361ee",
+    marginRight: 2,
   },
   price: {
-    fontSize: 36,
-    fontWeight: "bold",
+    fontSize: 42,
+    fontWeight: "700",
     color: "#4361ee",
   },
   duration: {
     fontSize: 14,
-    color: "#666",
+    color: "#6B7280",
     marginLeft: 4,
   },
-  featuresList: {
-    marginBottom: 24,
+  featuresWrapper: {
+    flex: 1,
+    marginBottom: 28,
+  },
+  featuresContainer: {
+    gap: 12,
   },
   featureItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
-    gap: 8,
+    gap: 10,
   },
   featureText: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 13,
+    color: "#4B5563",
     flex: 1,
+    lineHeight: 18,
   },
   selectButton: {
-    backgroundColor: "#4361ee",
-    paddingVertical: 12,
-    borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F9FAFB",
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginTop: "auto",
+  },
+  selectButtonPopular: {
+    backgroundColor: "#4361ee",
+    borderColor: "#4361ee",
   },
   selectButtonText: {
-    color: "#fff",
+    fontSize: 14,
     fontWeight: "600",
-    fontSize: 16,
+    color: "#4361ee",
+  },
+  selectButtonTextPopular: {
+    color: "#FFFFFF",
+  },
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+  },
+  footerText: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    textAlign: "center",
   },
 });
