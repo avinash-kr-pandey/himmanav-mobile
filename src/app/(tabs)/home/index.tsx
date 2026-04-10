@@ -1,47 +1,59 @@
-// app/(app)/home/index.tsx
-import React from "react";
-import { ScrollView, StyleSheet, RefreshControl } from "react-native";
-import { colors } from "../../../constants/colors";
-import Header from "../../../components/pages/Home/Header";
-import MetricsGrid from "../../../components/pages/Home/MetricsGrid";
-import TasksList from "../../../components/pages/Home/TasksList";
-import RecentActivities from "../../../components/pages/Home/RecentActivities";
-import { dashboardMetrics, pendingTasks, recentActivities } from "../../../constants/Home/home.data";
-import StatsCard from "../../../components/pages/Home/StatsCard";
+import React, { useEffect } from "react";
+import { View, ScrollView } from "react-native";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthHero } from "../../../components/pages/Home/AuthHero";
+import { AuthSlider } from "../../../components/pages/Home/AuthSlider";
+import { AuthFeatures } from "../../../components/pages/Home/AuthFeatures";
+import { AuthCrmManagement } from "../../../components/pages/Home/AuthCrmManagement";
+import { AuthSlaCompliant } from "../../../components/pages/Home/AuthSlaCompliant";
+import { AuthWhyChoose } from "../../../components/pages/Home/AuthWhyChoose";
+import { AuthPackages } from "../../../components/pages/Home/AuthPackages";
+import { AuthFAQ } from "../../../components/pages/Home/AuthFAQ";
 
-
-export default function HomeScreen() {
-  const [refreshing, setRefreshing] = React.useState(false);
-
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    // Simulate data refresh
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
+const Homepage = () => {
+  useEffect(() => {
+    const scrollToSection = async () => {
+      const sectionId = await AsyncStorage.getItem("scrollToSection");
+      if (sectionId) {
+        // In React Native, we'll handle scroll programmatically via refs
+        setTimeout(async () => {
+          await AsyncStorage.removeItem("scrollToSection");
+        }, 100);
+      }
+    };
+    scrollToSection();
   }, []);
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <Header  />
-      <MetricsGrid metrics={dashboardMetrics} />
-      <StatsCard number={128} label="Total Projects" />
-      <TasksList tasks={pendingTasks} />
-      <RecentActivities activities={recentActivities} />
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <View>
+        {/* hero section */}
+        <AuthHero />
+
+        {/* slider section */}
+        <AuthSlider />
+
+        {/* features section*/}
+        <AuthFeatures />
+
+        {/* management section*/}
+        <AuthCrmManagement />
+
+        {/* sla complaint section*/}
+        <AuthSlaCompliant />
+
+        {/* why choose us section*/}
+        <AuthWhyChoose />
+
+        {/* pricing section*/}
+        <AuthPackages />
+
+        {/* faq section*/}
+        <AuthFAQ />
+      </View>
     </ScrollView>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-});
+export default Homepage;
