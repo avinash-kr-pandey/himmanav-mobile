@@ -503,6 +503,7 @@ const styles = StyleSheet.create({
   deptTitle: {
     fontSize: 14,
     fontWeight: "600",
+    
     color: "#1F2937",
     marginBottom: 2,
   },
