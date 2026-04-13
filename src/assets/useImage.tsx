@@ -18,7 +18,6 @@ import headersvg from './headersvg.svg'
 import bottomsvg from './bottomsvg.svg'
 import bottomsvgtwo from './bottomsvgtwo.svg'
 import topCollection from './top-collection.gif'
-import davinder from './davinder.png';
 import HarpreetSingh from './HarpreetSingh.jpeg';
 import ShashankSharma from './ShashankSharma.jpeg';
 import Rakesh from './Rakesh.png';
@@ -28,6 +27,7 @@ import profileCover from './profile-cover.png';
 import profileCover2 from './profile-cover-2.png';
 import profileCover3 from './profile-cover-3.png';
 import barCodeScanner from './barcode-scanner.gif';
+// import davinder from './davinder.png';
 
 
 
@@ -35,5 +35,5 @@ import barCodeScanner from './barcode-scanner.gif';
 
 
 export {
-    loginImage, headersvg, bottomsvg, bottomsvgtwo, addRole, logo, placeholderImg, homeimg1, homeimg2, homeimg3, homelogo, featurecardimg1, featurecardimg2, manageimage, footerlogoimage, loginPageimage, forgotPageimage, changepass, topCollection, davinder, HarpreetSingh, ShashankSharma, Rakesh, naveenSharma, NaveenSharma, profileCover, profileCover2, profileCover3, barCodeScanner
+    loginImage, headersvg, bottomsvg, bottomsvgtwo, addRole, logo, placeholderImg, homeimg1, homeimg2, homeimg3, homelogo, featurecardimg1, featurecardimg2, manageimage, footerlogoimage, loginPageimage, forgotPageimage, changepass, topCollection, HarpreetSingh, ShashankSharma, Rakesh, naveenSharma, NaveenSharma, profileCover, profileCover2, profileCover3, barCodeScanner
 }
