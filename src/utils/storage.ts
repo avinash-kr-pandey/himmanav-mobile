@@ -1,72 +1,50 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// src/utils/storage.ts
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const AUTH_TOKEN_KEY = '@auth_token';
-export const USER_DATA_KEY = '@user_data';
-export const NAVIGATION_STATE_KEY = '@navigation_state';
+// Verify AsyncStorage is working
+export const initStorage = async (): Promise<boolean> => {
+  try {
+    console.log("Initializing storage...");
+    // Test AsyncStorage
+    await AsyncStorage.setItem("@test", "test");
+    const result = await AsyncStorage.getItem("@test");
+    await AsyncStorage.removeItem("@test");
+    console.log("✅ Storage initialized successfully");
+    return true;
+  } catch (error) {
+    console.error("❌ Storage initialization failed:", error);
+    return false;
+  }
+};
 
-class StorageService {
-  private static instance: StorageService;
-  
-  static getInstance(): StorageService {
-    if (!StorageService.instance) {
-      StorageService.instance = new StorageService();
-    }
-    return StorageService.instance;
-  }
-  
-  async setItem<T>(key: string, value: T): Promise<void> {
+export const storage = {
+  getItem: async (key: string): Promise<string | null> => {
     try {
-      const jsonValue = JSON.stringify(value);
-      await AsyncStorage.setItem(key, jsonValue);
+      return await AsyncStorage.getItem(key);
     } catch (error) {
-      console.error('Error saving data:', error);
-    }
-  }
-  
-  async getItem<T>(key: string): Promise<T | null> {
-    try {
-      const jsonValue = await AsyncStorage.getItem(key);
-      return jsonValue != null ? JSON.parse(jsonValue) : null;
-    } catch (error) {
-      console.error('Error reading data:', error);
+      console.error(`Error getting ${key}:`, error);
       return null;
     }
-  }
-  
-  async removeItem(key: string): Promise<void> {
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (error) {
+      console.error(`Error setting ${key}:`, error);
+    }
+  },
+  removeItem: async (key: string): Promise<void> => {
     try {
       await AsyncStorage.removeItem(key);
     } catch (error) {
-      console.error('Error removing data:', error);
+      console.error(`Error removing ${key}:`, error);
     }
-  }
-  
-  async clear(): Promise<void> {
+  },
+  clear: async (): Promise<void> => {
     try {
       await AsyncStorage.clear();
     } catch (error) {
-      console.error('Error clearing data:', error);
+      console.error("Error clearing storage:", error);
     }
-  }
-  
-  // Special method for boolean values
-  async setBoolean(key: string, value: boolean): Promise<void> {
-    try {
-      await AsyncStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      console.error('Error saving boolean:', error);
-    }
-  }
-  
-  async getBoolean(key: string): Promise<boolean | null> {
-    try {
-      const value = await AsyncStorage.getItem(key);
-      return value !== null ? JSON.parse(value) : null;
-    } catch (error) {
-      console.error('Error reading boolean:', error);
-      return null;
-    }
-  }
-}
-
-export const storage = StorageService.getInstance();
+  },
+};

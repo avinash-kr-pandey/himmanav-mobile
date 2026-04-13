@@ -1,3 +1,4 @@
+// screens/auth/LoginScreen.tsx
 import React, { useState, useRef } from "react";
 import {
   View,
@@ -17,7 +18,6 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuth } from "../../../contexts/AuthContext";
-import { validators } from "../../../utils/validators";
 import { colors } from "../../../constants/colors";
 import CommonModal from "../../../components/common/CommonModal";
 import { privacyData, termsData } from "../../../constants/ModalData/modalData";
@@ -31,17 +31,12 @@ type RootStackParamList = {
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-interface LoginFormData {
-  email: string;
-  password: string;
-}
-
 export default function LoginScreen() {
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState<Partial<LoginFormData>>({});
+  const [number, setNumber] = useState(""); // ✅ Changed to match web
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{ number?: string; password?: string }>(
+    {},
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -52,36 +47,25 @@ export default function LoginScreen() {
 
   const passwordInputRef = useRef<TextInput>(null);
 
-  const validateField = (field: keyof LoginFormData, value: string): string => {
-    if (field === "email") {
-      if (!value) return "Email is required";
-      if (!validators.email(value)) return "Please enter a valid email";
-    }
-    if (field === "password") {
-      if (!value) return "Password is required";
-      if (!validators.password(value))
-        return "Password must be at least 6 characters";
-    }
-    return "";
-  };
-
-  const handleChange = (field: keyof LoginFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-
+  // ✅ Validation matching web version
   const validateForm = (): boolean => {
-    const newErrors: Partial<LoginFormData> = {};
+    const newErrors: { number?: string; password?: string } = {};
 
-    newErrors.email = validateField("email", formData.email);
-    newErrors.password = validateField("password", formData.password);
+    if (!number.trim()) {
+      newErrors.number = "Mobile number is required";
+    } else if (!/^\d{10}$/.test(number)) {
+      newErrors.number = "Please enter a valid 10-digit mobile number";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 5) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
 
     setErrors(newErrors);
-    return !newErrors.email && !newErrors.password;
+    return Object.keys(newErrors).length === 0;
   };
-
 
   const handleLogin = async () => {
     Keyboard.dismiss();
@@ -89,15 +73,27 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      await login({
-        email: formData.email,
-        password: formData.password,
+      // ✅ Send exactly like web version
+      const response = await login({
+        number: number,
+        password: password,
       });
-      // Navigation will happen automatically due to auth state change
+
+      if (response?.access_token) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "MainTabs" as never }],
+        });
+      } else {
+        Alert.alert("Login Failed", response?.message || "Invalid credentials");
+      }
     } catch (error: any) {
+      console.error("Login error:", error);
       Alert.alert(
         "Login Failed",
-        error.message || "Invalid email or password. Please try again.",
+        error?.data?.error ||
+          error?.message ||
+          "Invalid mobile number or password. Please try again.",
       );
     } finally {
       setIsLoading(false);
@@ -146,38 +142,42 @@ export default function LoginScreen() {
           >
             <View style={styles.content}>
               <View style={styles.header}>
-                <Text style={styles.emoji}>🚀</Text>
-                <Text style={styles.title}>Welcome Back!</Text>
+                <Text style={styles.emoji}>👋🏻</Text>
+                <Text style={styles.title}>Welcome back!</Text>
                 <Text style={styles.subtitle}>
-                  Sign in to continue your journey
+                  Please login to manage your dashboard.
                 </Text>
               </View>
 
               <View style={styles.form}>
+                {/* Mobile Number Input - Same as web */}
                 <View style={styles.inputWrapper}>
-                  <Text style={styles.label}>Email Address</Text>
+                  <Text style={styles.label}>Mobile Number</Text>
                   <TextInput
-                    style={[styles.input, errors.email && styles.inputError]}
-                    placeholder="you@example.com"
+                    style={[styles.input, errors.number && styles.inputError]}
+                    placeholder="0123456789"
                     placeholderTextColor={colors.textLighter}
-                    value={formData.email}
-                    onChangeText={(text) => handleChange("email", text)}
-                    onBlur={() => {
-                      const error = validateField("email", formData.email);
-                      setErrors((prev) => ({ ...prev, email: error }));
+                    value={number}
+                    onChangeText={(text) => {
+                      if (/^\d{0,10}$/.test(text)) {
+                        setNumber(text);
+                        if (errors.number) {
+                          setErrors((prev) => ({ ...prev, number: undefined }));
+                        }
+                      }
                     }}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    autoCorrect={false}
+                    keyboardType="numeric"
+                    maxLength={10}
                     returnKeyType="next"
                     onSubmitEditing={() => passwordInputRef.current?.focus()}
                     editable={!isLoading}
                   />
-                  {errors.email && (
-                    <Text style={styles.errorText}>{errors.email}</Text>
+                  {errors.number && (
+                    <Text style={styles.errorText}>{errors.number}</Text>
                   )}
                 </View>
 
+                {/* Password Input - Same as web */}
                 <View style={styles.inputWrapper}>
                   <Text style={styles.label}>Password</Text>
                   <View style={styles.passwordContainer}>
@@ -188,16 +188,17 @@ export default function LoginScreen() {
                         styles.passwordInput,
                         errors.password && styles.inputError,
                       ]}
-                      placeholder="Enter your password"
+                      placeholder="mySecurePass123"
                       placeholderTextColor={colors.textLighter}
-                      value={formData.password}
-                      onChangeText={(text) => handleChange("password", text)}
-                      onBlur={() => {
-                        const error = validateField(
-                          "password",
-                          formData.password,
-                        );
-                        setErrors((prev) => ({ ...prev, password: error }));
+                      value={password}
+                      onChangeText={(text) => {
+                        setPassword(text);
+                        if (errors.password) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            password: undefined,
+                          }));
+                        }
                       }}
                       secureTextEntry={!showPassword}
                       returnKeyType="done"
@@ -219,13 +220,24 @@ export default function LoginScreen() {
                   )}
                 </View>
 
-                <TouchableOpacity
-                  style={styles.forgotButton}
-                  onPress={() => navigation.navigate("ForgotPassword")}
-                >
-                  <Text style={styles.forgotText}>Forgot Password?</Text>
-                </TouchableOpacity>
+                {/* Forgot Password & Remember Me Row */}
+                <View style={styles.optionsRow}>
+                  <TouchableOpacity style={styles.rememberContainer}>
+                    <View style={styles.checkbox}>
+                      {/* Checkbox can be added later */}
+                    </View>
+                    <Text style={styles.rememberText}>Remember me</Text>
+                  </TouchableOpacity>
 
+                  <TouchableOpacity
+                    style={styles.forgotButton}
+                    onPress={() => navigation.navigate("ForgotPassword")}
+                  >
+                    <Text style={styles.forgotText}>Forgot Password?</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Login Button */}
                 <TouchableOpacity
                   style={[
                     styles.loginButton,
@@ -236,20 +248,24 @@ export default function LoginScreen() {
                   activeOpacity={0.8}
                 >
                   <Text style={styles.loginButtonText}>
-                    {isLoading ? "Please wait..." : "Sign In"}
+                    {isLoading ? "Logging in..." : "Login"}
                   </Text>
                 </TouchableOpacity>
 
+                {/* Register Link */}
                 <View style={styles.signupContainer}>
-                  <Text style={styles.signupText}>Don't have an account? </Text>
+                  <Text style={styles.signupText}>
+                    don't have any account?{" "}
+                  </Text>
                   <TouchableOpacity
                     onPress={() => navigation.navigate("Register")}
                   >
-                    <Text style={styles.signupLink}>Create Account</Text>
+                    <Text style={styles.signupLink}>Register</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
+              {/* Footer - Same as web */}
               <View style={styles.footer}>
                 <Text style={styles.footerText}>
                   By continuing, you agree to our
@@ -308,7 +324,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   emoji: {
-    fontSize: 64,
+    fontSize: 48,
     marginBottom: 16,
   },
   title: {
@@ -323,7 +339,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   form: {
-    gap: 16,
+    gap: 20,
   },
   inputWrapper: {
     gap: 8,
@@ -364,9 +380,30 @@ const styles = StyleSheet.create({
   eyeText: {
     fontSize: 20,
   },
-  forgotButton: {
-    alignSelf: "flex-end",
+  optionsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 4,
+  },
+  rememberContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderWidth: 2,
+    borderColor: colors.primary || "#6366F1",
+    borderRadius: 4,
+  },
+  rememberText: {
+    fontSize: 14,
+    color: colors.textLight || "#6B7280",
+  },
+  forgotButton: {
+    paddingVertical: 4,
   },
   forgotText: {
     fontSize: 14,
@@ -392,7 +429,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 24,
+    marginTop: 16,
   },
   signupText: {
     fontSize: 14,

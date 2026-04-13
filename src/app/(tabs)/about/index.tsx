@@ -8,11 +8,13 @@ import {
   TouchableOpacity,
   Platform,
   Dimensions,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { MaterialIcons } from "@expo/vector-icons";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 export default function AboutScreen() {
   const handleEmailPress = () => {
@@ -24,159 +26,211 @@ export default function AboutScreen() {
   };
 
   const handleAddressPress = () => {
-    Linking.openURL("https://maps.google.com/?q=Manla,PO Kiarkoti,Shimla,171007");
+    Linking.openURL(
+      "https://maps.google.com/?q=Manla,PO Kiarkoti,Shimla,171007",
+    );
   };
 
   return (
-    <ScrollView 
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      bounces={false}
-    >
-      {/* Header Section */}
-      <View style={styles.header}>
-        <View style={styles.headerBadge}>
-          <MaterialIcons name="info" size={18} color="#4361ee" />
-          <Text style={styles.headerBadgeText}>About Us</Text>
-        </View>
-        <Text style={styles.headerTitle}>
-          Empowering{"\n"}
-          <Text style={styles.headerHighlight}>Businesses Worldwide</Text>
-        </Text>
-      </View>
-
-      {/* Main Content */}
-      <View style={styles.content}>
-        {/* Introduction */}
-        <View style={styles.card}>
-          <View style={styles.cardIcon}>
-            <Icon name="rocket" size={24} color="#4361ee" solid />
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        bounces={true}
+        alwaysBounceVertical={true}
+        overScrollMode="always"
+        contentContainerStyle={styles.scrollContent}
+        decelerationRate="normal"
+        scrollEventThrottle={16}
+      >
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.headerBadge}>
+            <MaterialIcons name="info" size={18} color="#4361ee" />
+            <Text style={styles.headerBadgeText}>About Us</Text>
           </View>
-          <Text style={styles.cardText}>
-            At Himmanav Asset Management Technology, we are committed to empowering 
-            businesses with the tools they need to succeed. Our platform combines 
-            intuitive business management tools, data-driven insights, and personalized 
-            support to help you streamline operations and enhance your business performance.
+          <Text style={styles.headerTitle}>
+            Empowering{"\n"}
+            <Text style={styles.headerHighlight}>Businesses Worldwide</Text>
           </Text>
         </View>
 
-        {/* Mission Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIcon}>
-              <Icon name="bullseye" size={20} color="#4361ee" solid />
+        {/* Main Content */}
+        <View style={styles.content}>
+          {/* Introduction */}
+          <View style={styles.card}>
+            <View style={styles.cardIcon}>
+              <Icon name="rocket" size={24} color="#4361ee" solid />
             </View>
-            <Text style={styles.sectionTitle}>Our Mission</Text>
-          </View>
-          <Text style={styles.sectionText}>
-            Our mission is to simplify business operations and help companies scale with ease. 
-            We strive to create accessible, user-friendly solutions that provide clarity, 
-            transparency, and control over every aspect of your business.
-          </Text>
-        </View>
-
-        {/* What We Offer */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIcon}>
-              <Icon name="gift" size={20} color="#4361ee" solid />
-            </View>
-            <Text style={styles.sectionTitle}>What We Offer</Text>
-          </View>
-          <View style={styles.featuresGrid}>
-            {[
-              { icon: "briefcase", text: "Comprehensive business management tools for efficient operations" },
-              { icon: "chart-line", text: "Real-time dashboards and analytics to track business performance" },
-              { icon: "cloud", text: "Secure, scalable cloud-based infrastructure for seamless collaboration" },
-              { icon: "headset", text: "Expert support and personalized business advisory services" },
-              { icon: "users", text: "Team collaboration tools to enhance internal communication" },
-              { icon: "tasks", text: "Task and project management features to streamline workflows" },
-            ].map((feature, index) => (
-              <View key={index} style={styles.featureItem}>
-                <View style={styles.featureIcon}>
-                  <Icon name={feature.icon} size={14} color="#22C55E" solid />
-                </View>
-                <Text style={styles.featureText}>{feature.text}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Our Commitment */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIcon}>
-              <Icon name="handshake" size={20} color="#4361ee" solid />
-            </View>
-            <Text style={styles.sectionTitle}>Our Commitment</Text>
-          </View>
-          <Text style={styles.sectionText}>
-            We are committed to maintaining the highest standards of security, transparency, 
-            and trust. Our team works tirelessly to ensure that your data is protected, and 
-            your business processes are optimized for success.
-          </Text>
-        </View>
-
-        {/* Contact Section */}
-        <View style={styles.contactSection}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIcon}>
-              <Icon name="envelope" size={20} color="#4361ee" solid />
-            </View>
-            <Text style={styles.sectionTitle}>Contact Us</Text>
-          </View>
-          <Text style={styles.contactText}>
-            Have questions or want to learn more? Get in touch with us:
-          </Text>
-
-          <TouchableOpacity style={styles.contactItem} onPress={handleEmailPress}>
-            <View style={styles.contactIcon}>
-              <Icon name="envelope" size={16} color="#4361ee" solid />
-            </View>
-            <Text style={styles.contactLink}>support@himmanav.com</Text>
-            <Icon name="external-link-alt" size={12} color="#9CA3AF" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.contactItem} onPress={handlePhonePress}>
-            <View style={styles.contactIcon}>
-              <Icon name="phone" size={16} color="#4361ee" solid />
-            </View>
-            <Text style={styles.contactLink}>+91-9459679357</Text>
-            <Icon name="external-link-alt" size={12} color="#9CA3AF" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.contactItem} onPress={handleAddressPress}>
-            <View style={styles.contactIcon}>
-              <Icon name="map-marker-alt" size={16} color="#4361ee" solid />
-            </View>
-            <Text style={styles.contactText} numberOfLines={2}>
-              Manla, PO Kiarkoti, T&D Shimla, 171007
+            <Text style={styles.cardText}>
+              At Himmanav Asset Management Technology, we are committed to
+              empowering businesses with the tools they need to succeed. Our
+              platform combines intuitive business management tools, data-driven
+              insights, and personalized support to help you streamline
+              operations and enhance your business performance.
             </Text>
-            <Icon name="external-link-alt" size={12} color="#9CA3AF" />
-          </TouchableOpacity>
-        </View>
-      </View>
+          </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <View style={styles.footerLine} />
-        <Text style={styles.footerText}>
-          © 2024 Himmanav Asset Management Technology. All rights reserved.
-        </Text>
-      </View>
-    </ScrollView>
+          {/* Mission Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIcon}>
+                <Icon name="bullseye" size={20} color="#4361ee" solid />
+              </View>
+              <Text style={styles.sectionTitle}>Our Mission</Text>
+            </View>
+            <Text style={styles.sectionText}>
+              Our mission is to simplify business operations and help companies
+              scale with ease. We strive to create accessible, user-friendly
+              solutions that provide clarity, transparency, and control over
+              every aspect of your business.
+            </Text>
+          </View>
+
+          {/* What We Offer */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIcon}>
+                <Icon name="gift" size={20} color="#4361ee" solid />
+              </View>
+              <Text style={styles.sectionTitle}>What We Offer</Text>
+            </View>
+            <View style={styles.featuresGrid}>
+              {[
+                {
+                  icon: "briefcase",
+                  text: "Comprehensive business management tools for efficient operations",
+                },
+                {
+                  icon: "chart-line",
+                  text: "Real-time dashboards and analytics to track business performance",
+                },
+                {
+                  icon: "cloud",
+                  text: "Secure, scalable cloud-based infrastructure for seamless collaboration",
+                },
+                {
+                  icon: "headset",
+                  text: "Expert support and personalized business advisory services",
+                },
+                {
+                  icon: "users",
+                  text: "Team collaboration tools to enhance internal communication",
+                },
+                {
+                  icon: "tasks",
+                  text: "Task and project management features to streamline workflows",
+                },
+              ].map((feature, index) => (
+                <View key={index} style={styles.featureItem}>
+                  <View style={styles.featureIcon}>
+                    <Icon name={feature.icon} size={14} color="#22C55E" solid />
+                  </View>
+                  <Text style={styles.featureText}>{feature.text}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Our Commitment */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIcon}>
+                <Icon name="handshake" size={20} color="#4361ee" solid />
+              </View>
+              <Text style={styles.sectionTitle}>Our Commitment</Text>
+            </View>
+            <Text style={styles.sectionText}>
+              We are committed to maintaining the highest standards of security,
+              transparency, and trust. Our team works tirelessly to ensure that
+              your data is protected, and your business processes are optimized
+              for success.
+            </Text>
+          </View>
+
+          {/* Contact Section */}
+          <View style={styles.contactSection}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIcon}>
+                <Icon name="envelope" size={20} color="#4361ee" solid />
+              </View>
+              <Text style={styles.sectionTitle}>Contact Us</Text>
+            </View>
+            <Text style={styles.contactText}>
+              Have questions or want to learn more? Get in touch with us:
+            </Text>
+
+            <TouchableOpacity
+              style={styles.contactItem}
+              onPress={handleEmailPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.contactIcon}>
+                <Icon name="envelope" size={16} color="#4361ee" solid />
+              </View>
+              <Text style={styles.contactLink}>support@himmanav.com</Text>
+              <Icon name="external-link-alt" size={12} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.contactItem}
+              onPress={handlePhonePress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.contactIcon}>
+                <Icon name="phone" size={16} color="#4361ee" solid />
+              </View>
+              <Text style={styles.contactLink}>+91-9459679357</Text>
+              <Icon name="external-link-alt" size={12} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.contactItem, styles.lastContactItem]}
+              onPress={handleAddressPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.contactIcon}>
+                <Icon name="map-marker-alt" size={16} color="#4361ee" solid />
+              </View>
+              <Text style={styles.contactLinkText} numberOfLines={2}>
+                Manla, PO Kiarkoti, T&D Shimla, 171007
+              </Text>
+              <Icon name="external-link-alt" size={12} color="#9CA3AF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <View style={styles.footerLine} />
+          <Text style={styles.footerText}>
+            © 2024 Himmanav Asset Management Technology. All rights reserved.
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: Platform.OS === "ios" ? 20 : 24,
+  },
   header: {
     width: width,
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 40 : 24,
+    paddingTop: Platform.OS === "ios" ? 20 : 24,
     paddingBottom: 24,
     alignItems: "center",
     backgroundColor: "#FFFFFF",
@@ -321,6 +375,9 @@ const styles = StyleSheet.create({
     borderBottomColor: "#F3F4F6",
     gap: 12,
   },
+  lastContactItem: {
+    borderBottomWidth: 0,
+  },
   contactIcon: {
     width: 28,
     height: 28,
@@ -335,10 +392,18 @@ const styles = StyleSheet.create({
     color: "#4361ee",
     fontWeight: "500",
   },
+  contactLinkText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#4361ee",
+    fontWeight: "500",
+    lineHeight: 20,
+  },
   footer: {
     paddingHorizontal: 20,
     paddingVertical: 24,
     alignItems: "center",
+    marginTop: 8,
   },
   footerLine: {
     width: 40,

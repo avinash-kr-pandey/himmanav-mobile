@@ -1,19 +1,25 @@
-import React, { useEffect } from "react";
-import { View, Text, StyleSheet, Animated, Dimensions } from "react-native";
-import { StatusBar } from "expo-status-bar";
+// components/common/SplashScreen.tsx
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  Image,
+} from 'react-native';
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 
 interface SplashScreenProps {
   onFinish: () => void;
 }
 
-export default function SplashScreen({ onFinish }: SplashScreenProps) {
-  const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.5);
+const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
-    // Animation sequence
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -22,69 +28,75 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
-        tension: 10,
-        friction: 2,
+        tension: 20,
+        friction: 7,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Navigate to home after 2.5 seconds
     const timer = setTimeout(() => {
       onFinish();
-    }, 2500);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
       <Animated.View
         style={[
-          styles.content,
+          styles.logoContainer,
           {
             opacity: fadeAnim,
             transform: [{ scale: scaleAnim }],
           },
         ]}
       >
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>🚀</Text>
-          <Text style={styles.appName}>MyApp</Text>
+        <View style={styles.logo}>
+          <Text style={styles.logoText}>H</Text>
         </View>
-        <Text style={styles.tagline}>Welcome to your journey</Text>
+        <Text style={styles.appName}>Himmanav</Text>
+        <Text style={styles.tagline}>Asset Management Technology</Text>
       </Animated.View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#6366f1",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  content: {
-    alignItems: "center",
+    backgroundColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   logoContainer: {
-    alignItems: "center",
+    alignItems: 'center',
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 20,
   },
   logoText: {
-    fontSize: 80,
-    marginBottom: 10,
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#3B82F6',
   },
   appName: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#ffffff",
-    marginTop: 10,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
   },
   tagline: {
-    fontSize: 16,
-    color: "#e0e7ff",
-    marginTop: 20,
+    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.9,
   },
 });
+
+export default SplashScreen;

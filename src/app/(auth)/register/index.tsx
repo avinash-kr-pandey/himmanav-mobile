@@ -1,3 +1,4 @@
+// screens/auth/RegisterScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -67,7 +68,7 @@ export default function RegisterScreen() {
     setIsLoading(true);
 
     try {
-      await register({
+      const response = await register({
         name: formData.name,
         mobile_number: formData.mobileNumber,
         email: formData.email || undefined,
@@ -75,7 +76,15 @@ export default function RegisterScreen() {
         password_confirmation: formData.confirmPassword,
       });
 
-      Alert.alert("Success", "Registration successful!", [{ text: "OK" }]);
+      if (response?.message) {
+        Alert.alert("Success", response.message, [
+          { text: "OK", onPress: () => navigation.navigate("Login") },
+        ]);
+      } else {
+        Alert.alert("Success", "Registration successful!", [
+          { text: "OK", onPress: () => navigation.navigate("Login") },
+        ]);
+      }
     } catch (error: any) {
       Alert.alert(
         "Registration Failed",

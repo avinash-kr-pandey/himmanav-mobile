@@ -1,3 +1,4 @@
+// screens/auth/ForgotPasswordScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -50,11 +51,12 @@ export default function ForgotPasswordScreen() {
     setIsLoading(true);
 
     try {
-      await forgotPassword(email);
+      const response = await forgotPassword(email);
 
       Alert.alert(
         "Reset Link Sent",
-        "Please check your email for password reset instructions.",
+        response?.message ||
+          "Please check your email for password reset instructions.",
         [{ text: "OK", onPress: () => navigation.navigate("Login") }],
       );
     } catch (error: any) {

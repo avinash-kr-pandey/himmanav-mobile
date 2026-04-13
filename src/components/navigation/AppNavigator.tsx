@@ -1,4 +1,4 @@
-// navigation/AppNavigator.tsx
+// src/components/navigation/AppNavigator.tsx
 import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -14,34 +14,27 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { colors } from "../../constants/colors";
 
-// Import Auth Screens
-import LoginScreen from "../../app/(auth)/login";
-import RegisterScreen from "../../app/(auth)/register";
-import ForgotPasswordScreen from "../../app/(auth)/forgot-password";
-
-// Import Tab Screens
-import HomeScreen from "../../app/(tabs)/home";
-import AboutScreen from "../../app/(tabs)/about";
-import ContactScreen from "../../app/(tabs)/contact";
-import ProfileScreen from "../../app/(tabs)/profile";
-import SettingsScreen from "../../app/(tabs)/settings";
-
 // Import Components
 import AppHeader from "../common/AppHeader";
 import SidebarModal from "../common/SidebarModal";
 import { getBottomTabs, TabItem } from "../../constants/tab&sidebar/data";
+import Homepage from "../../app/(tabs)/home";
+import AboutScreen from "../../app/(tabs)/about";
+import ContactScreen from "../../app/(tabs)/contact";
+import ProfileScreen from "../../app/(tabs)/profile";
+import SettingsScreen from "../../app/(tabs)/settings";
+import LoginScreen from "../../app/(auth)/login";
+import RegisterScreen from "../../app/(auth)/register";
+import ForgotPasswordScreen from "../../app/(auth)/forgot-password";
 
-// ✅ Fix: Add MainApp to RootStackParamList
+// Import Screens
+
+
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  MainApp: undefined; // ✅ Added MainApp here
-  Home: undefined;
-  About: undefined;
-  Contact: undefined;
-  Profile: undefined;
-  Settings: undefined;
+  MainApp: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -50,13 +43,24 @@ const Tab = createBottomTabNavigator();
 // Map screen names to components
 const getScreenComponent = (screenName: string) => {
   const screens: Record<string, any> = {
-    Home: HomeScreen,
+    Home: Homepage,
     About: AboutScreen,
     Contact: ContactScreen,
     Profile: ProfileScreen,
     Settings: SettingsScreen,
   };
-  return screens[screenName] || HomeScreen;
+
+  const Component = screens[screenName];
+
+  if (!Component) {
+    return () => (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Screen "{screenName}" not found</Text>
+      </View>
+    );
+  }
+
+  return Component;
 };
 
 // Dynamic Bottom Tab Navigator
@@ -71,7 +75,6 @@ function DynamicBottomTabs() {
 
   const loadTabs = () => {
     setLoading(true);
-    // Get tabs from data.ts based on user type
     const tabItems = getBottomTabs(user?.user_type || "employee");
     setTabs(tabItems);
     setLoading(false);
@@ -107,7 +110,17 @@ function DynamicBottomTabs() {
           name={tab.screen}
           component={getScreenComponent(tab.screen)}
           options={{
-            tabBarLabel: tab.title,
+            tabBarLabel: ({ focused }) => (
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: focused ? colors.primary : "#9CA3AF",
+                  marginTop: 4,
+                }}
+              >
+                {tab.title}
+              </Text>
+            ),
             tabBarIcon: ({ focused }) => (
               <Text
                 style={{
@@ -154,7 +167,7 @@ function MainApp() {
 }
 
 const AppNavigator: React.FC = () => {
-  const { user, authChecked, isLoading } = useAuth();
+  const { user, isLoading, authChecked } = useAuth();
 
   if (!authChecked || isLoading) {
     return (
@@ -170,16 +183,18 @@ const AppNavigator: React.FC = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
-          <>
+          <Stack.Group>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen
               name="ForgotPassword"
               component={ForgotPasswordScreen}
             />
-          </>
+          </Stack.Group>
         ) : (
-          <Stack.Screen name="MainApp" component={MainApp} />
+          <Stack.Group>
+            <Stack.Screen name="MainApp" component={MainApp} />
+          </Stack.Group>
         )}
       </Stack.Navigator>
     </NavigationContainer>
@@ -209,6 +224,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#EF4444",
+    textAlign: "center",
+  },
 });
 
+// ✅ IMPORTANT: Add default export here
 export default AppNavigator;

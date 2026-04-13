@@ -1,122 +1,161 @@
 // contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from "react";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch } from "react-redux";
 import {
-  User,
-  LoginCredentials,
-  RegisterCredentials,
-} from "../types/user.types";
-import authService from "../services/authService";
+  useLoginMutation,
+  useRegisterMutation,
+  useForgotPasswordMutation,
+  useLogoutMutation,
+} from "../../store/authApi";
+import { setTheme } from "../../store/slices/theme/themeSlice";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  number?: string;
+  phone?: string;
+  user_type: string;
+  profile_image?: string | null;
+  uid?: string;
+  email_verified_at?: string | null;
+  created_at?: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  authChecked: boolean;
   isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (credentials: LoginCredentials) => Promise<User>;
-  register: (credentials: RegisterCredentials) => Promise<User>;
+  authChecked: boolean;
+  setUser: (user: User | null) => void;
+  login: (credentials: { number: string; password: string }) => Promise<any>;
+  register: (userData: RegisterData) => Promise<any>;
+  forgotPassword: (email: string) => Promise<any>;
   logout: () => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (data: any) => Promise<void>;
+  updateUser: (userData: Partial<User>) => void;
+}
+
+interface RegisterData {
+  name: string;
+  mobile_number: string;
+  email?: string;
+  password: string;
+  password_confirmation: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-  return context;
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const dispatch = useDispatch();
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // API mutations
+  const [loginMutation] = useLoginMutation();
+  const [registerMutation] = useRegisterMutation();
+  const [forgotPasswordMutation] = useForgotPasswordMutation();
+  const [logoutMutation] = useLogoutMutation();
 
   useEffect(() => {
-    checkAuthStatus();
+    loadUser();
   }, []);
 
-  const checkAuthStatus = async () => {
+  const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser();
-      setUser(currentUser);
+      const token = await AsyncStorage.getItem("auth_token");
+      const userData = await AsyncStorage.getItem("user_data");
+      console.log("🔍 Loading user - Token exists:", !!token);
+      console.log("🔍 Loading user - UserData exists:", !!userData);
+
+      if (token && userData) {
+        const parsedUser = JSON.parse(userData);
+        console.log("✅ User loaded:", parsedUser?.email);
+        setUser(parsedUser);
+      } else {
+        console.log("❌ No user found, will show login screen");
+        setUser(null);
+      }
     } catch (error) {
-      console.error("Auth check error:", error);
+      console.error("Error loading user:", error);
       setUser(null);
     } finally {
+      setIsLoading(false);
       setAuthChecked(true);
     }
   };
 
-  const login = async (credentials: LoginCredentials): Promise<User> => {
+  const login = async (credentials: { number: string; password: string }) => {
     setIsLoading(true);
     try {
-      const user = await authService.login(credentials);
-      setUser(user);
-      return user;
-    } catch (error) {
+      const response = await loginMutation(credentials).unwrap();
+
+      if (response?.access_token) {
+        await AsyncStorage.setItem("auth_token", response.access_token);
+        if (response.user) {
+          await AsyncStorage.setItem(
+            "user_data",
+            JSON.stringify(response.user),
+          );
+          setUser(response.user);
+        }
+      }
+
+      return response;
+    } catch (error: any) {
       console.error("Login error:", error);
-      throw error;
+      throw new Error(error?.data?.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (credentials: RegisterCredentials): Promise<User> => {
+  const register = async (userData: RegisterData) => {
     setIsLoading(true);
     try {
-      const user = await authService.register(credentials);
-      setUser(user);
-      return user;
-    } catch (error) {
+      const response = await registerMutation(userData).unwrap();
+      return response;
+    } catch (error: any) {
       console.error("Register error:", error);
-      throw error;
+      throw new Error(error?.data?.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const forgotPassword = async (email: string) => {
     setIsLoading(true);
     try {
-      await authService.logout();
-      setUser(null);
-    } catch (error) {
-      console.error("Logout error:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const forgotPassword = async (email: string): Promise<void> => {
-    setIsLoading(true);
-    try {
-      // Add this method to your AuthService if needed
-      await authService.forgotPassword({ email });
-    } catch (error) {
+      const response = await forgotPasswordMutation({ email }).unwrap();
+      return response;
+    } catch (error: any) {
       console.error("Forgot password error:", error);
-      throw error;
+      throw new Error(error?.data?.message || "Failed to send reset link");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetPassword = async (data: any): Promise<void> => {
-    setIsLoading(true);
+  const logout = async () => {
     try {
-      // Add this method to your AuthService if needed
-      await authService.resetPassword(data);
+      await logoutMutation().unwrap();
     } catch (error) {
-      console.error("Reset password error:", error);
-      throw error;
+      console.error("Logout API error:", error);
     } finally {
-      setIsLoading(false);
+      await AsyncStorage.removeItem("auth_token");
+      await AsyncStorage.removeItem("user_data");
+      setUser(null);
+      dispatch(setTheme("light"));
+    }
+  };
+
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      AsyncStorage.setItem("user_data", JSON.stringify(updatedUser));
     }
   };
 
@@ -124,17 +163,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     <AuthContext.Provider
       value={{
         user,
-        authChecked,
         isLoading,
-        isAuthenticated: !!user,
+        authChecked,
+        setUser,
         login,
         register,
-        logout,
         forgotPassword,
-        resetPassword,
+        logout,
+        updateUser,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };

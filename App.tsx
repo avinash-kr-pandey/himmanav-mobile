@@ -3,21 +3,28 @@ import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { storage } from "./src/utils/storage";
+import { Provider } from "react-redux";
+
+import { storage, initStorage } from "./src/utils/storage";
 import SplashScreen from "./src/components/common/SplashScreen";
 import { AuthProvider } from "./src/contexts/AuthContext";
-import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
-import RootNavigator from "./src/components/navigation/AppNavigator";
+import { ThemeProvider } from "./src/components/ThemeProvider";
+import { useTheme } from "./src/hooks/useTheme";
+import { store } from "./store";
+import AppNavigator from "./src/components/navigation/AppNavigator";
 
 // Inner component to use theme
 function AppContent() {
-  const { headerColor, statusBarStyle } = useTheme();
+  const { colors, statusBarStyle, headerColor } = useTheme();
 
   return (
     <>
-      <StatusBar style={statusBarStyle} backgroundColor={headerColor} />
+      <StatusBar
+        style={statusBarStyle as "light" | "dark"}
+        backgroundColor={headerColor}
+      />
       <AuthProvider>
-        <RootNavigator />
+        <AppNavigator /> 
       </AuthProvider>
     </>
   );
@@ -30,6 +37,7 @@ export default function App() {
   useEffect(() => {
     const prepareApp = async () => {
       try {
+        await initStorage();
         await storage.removeItem("NAVIGATION_STATE");
         await storage.removeItem("NAVIGATION_STATE_KEY");
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -49,12 +57,14 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <AppContent />
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <Provider store={store}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <AppContent />
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </Provider>
   );
 }
